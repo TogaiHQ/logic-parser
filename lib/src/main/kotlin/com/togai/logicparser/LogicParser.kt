@@ -33,7 +33,7 @@ import io.github.jamsesso.jsonlogic.evaluator.expressions.StrictInequalityExpres
 import io.github.jamsesso.jsonlogic.evaluator.expressions.SubstringExpression
 
 
-data class Response(val status: Boolean, val message: String? = null)
+data class ValidationResponse(val status: Boolean, val message: String? = null)
 
 class LogicParser {
     private val jsonLogic = JsonLogic()
@@ -91,14 +91,14 @@ class LogicParser {
     /**
      * Method to validate whether the rule is valid or not.
      **/
-    fun validateExpression(rule: String, variables: HashSet<String>): Response {
+    fun validateExpression(rule: String, variables: HashSet<String>): ValidationResponse {
         try {
             val node = JsonLogicParser.parse(rule)
             traverseNode(node, variables)
         } catch (e: JsonLogicException) {
-            return Response(false, e.message)
+            return ValidationResponse(false, e.message)
         }
-        return Response(true)
+        return ValidationResponse(true)
     }
 
     /**
