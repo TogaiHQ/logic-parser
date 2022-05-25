@@ -34,14 +34,17 @@ import io.github.jamsesso.jsonlogic.evaluator.expressions.SubstringExpression
 import java.util.Queue
 import java.util.LinkedList
 
-
-data class ValidationResponse(val status: Boolean, val message: String? = null)
-
 class LogicParser {
+    companion object {
+        const val DIMENSIONS = "dimensions"
+        const val ATTRIBUTES = "attributes"
+    }
+
     private val jsonLogic = JsonLogic()
     private val expressionNames: HashSet<String> = HashSet()
 
     init {
+        // TODO: Create a PR in json logic repo to expose all supported operations
         expressionNames.addAll(
             hashSetOf(
                 MathExpression.ADD.key(),
@@ -93,7 +96,16 @@ class LogicParser {
     /**
      * Method to validate whether the rule is valid or not.
      **/
-    fun validateExpression(rule: String, variables: HashSet<String>): ValidationResponse {
+    fun validateExpression(rule: String, attributes: List<Attribute>, dimensions: List<Dimension>): ValidationResponse {
+        val variables = HashSet<String>()
+
+        attributes.forEach {
+            variables.add("$ATTRIBUTES.${it.name}")
+        }
+        dimensions.forEach {
+            variables.add("$DIMENSIONS.${it.name}")
+        }
+
         try {
             val node = JsonLogicParser.parse(rule)
             traverseNode(node, variables)
@@ -106,7 +118,19 @@ class LogicParser {
     /**
      * Method to evaluate the rule using the given data.
      **/
-    fun evaluateExpression(rule: String, data: Map<String, String>): Any? {
+    fun evaluateExpression(
+        rule: String,
+        attributeValues: List<AttributeValue>,
+        dimensionValues: List<DimensionValue>
+    ): Any? {
+        val data: HashMap<String, HashMap<String, String>> =
+            hashMapOf(ATTRIBUTES to hashMapOf(), DIMENSIONS to hashMapOf())
+        for (attributeValue in attributeValues) {
+            data[ATTRIBUTES]!![attributeValue.name] = attributeValue.value
+        }
+        for (dimensionValue in dimensionValues) {
+            data[DIMENSIONS]!![dimensionValue.name] = dimensionValue.value
+        }
         return jsonLogic.apply(rule, data)
     }
 

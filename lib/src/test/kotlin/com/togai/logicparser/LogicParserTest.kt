@@ -3,6 +3,8 @@
  */
 package com.togai.logicparser
 
+import com.togai.logicparser.LogicParser.Companion.ATTRIBUTES
+import com.togai.logicparser.LogicParser.Companion.DIMENSIONS
 import io.github.jamsesso.jsonlogic.evaluator.JsonLogicEvaluationException
 import java.lang.Integer.parseInt
 import kotlin.test.Test
@@ -18,7 +20,7 @@ class LogicParserTest {
             {
                 "+": [ 1, 2 ]
             }
-        """.trimIndent(), hashSetOf()
+        """.trimIndent(), listOf(), listOf()
         )
 
         assertEquals(true, response.status)
@@ -30,9 +32,9 @@ class LogicParserTest {
         val response = logicParser.validateExpression(
             """
             {
-                "+": [ {"var": "a"}, {"var": "b"} ]
+                "+": [ {"var": "$ATTRIBUTES.a"}, {"var": "$DIMENSIONS.b"} ]
             }
-        """.trimIndent(), hashSetOf("a", "b", "c")
+        """.trimIndent(), listOf(Attribute("a"), Attribute("c")), listOf(Dimension("b"))
         )
 
         assertEquals(true, response.status)
@@ -44,9 +46,9 @@ class LogicParserTest {
         val response = logicParser.validateExpression(
             """
             {
-                "+": [ {"var": "a"}, {"var": "b"} ]
+                "+": [  {"var": "$ATTRIBUTES.a"}, {"var": "$DIMENSIONS.b"} ]
             }
-        """.trimIndent(), hashSetOf("a")
+        """.trimIndent(), listOf(Attribute("a")), listOf()
         )
 
         assertEquals(false, response.status)
@@ -58,9 +60,9 @@ class LogicParserTest {
         val response = logicParser.validateExpression(
             """
             {
-                "xor": [ {"var": "a"}, {"var": "b"} ]
+                "xor": [  {"var": "$ATTRIBUTES.a"}, {"var": "$DIMENSIONS.b"} ]
             }
-        """.trimIndent(), hashSetOf("a", "b")
+        """.trimIndent(), listOf(Attribute("a")), listOf(Dimension("b"))
         )
 
         assertEquals(false, response.status)
@@ -73,9 +75,9 @@ class LogicParserTest {
         val response = logicParser.validateExpression(
             """
             {
-                "custom": [ {"var": "a"}, {"var": "b"} ]
+                "custom": [  {"var": "$ATTRIBUTES.a"}, {"var": "$DIMENSIONS.b"} ]
             }
-            """.trimIndent(), hashSetOf("a", "b")
+            """.trimIndent(), listOf(Attribute("a")), listOf(Dimension("b"))
         )
         assertEquals(true, response.status)
     }
@@ -86,9 +88,9 @@ class LogicParserTest {
         val response = logicParser.evaluateExpression(
             """
             {
-                "+": [ {"var": "a"}, {"var": "b"} ]
+                "+": [ {"var": "$ATTRIBUTES.a"}, {"var": "$DIMENSIONS.b"} ]
             }
-        """.trimIndent(), mapOf("a" to "1", "b" to "2")
+        """.trimIndent(), listOf(AttributeValue("a", "2")), listOf(DimensionValue("b", "1"))
         )
 
         assertEquals(3.0, response)
@@ -100,9 +102,9 @@ class LogicParserTest {
         logicParser.evaluateExpression(
             """
             {
-                "^": [ {"var": "a"}, {"var": "b"} ]
+                "^": [ {"var": "$ATTRIBUTES.a"}, {"var": "$DIMENSIONS.b"} ]
             }
-        """.trimIndent(), mapOf("a" to "1", "b" to "2")
+        """.trimIndent(), listOf(AttributeValue("a", "2")), listOf(DimensionValue("b", "1"))
         )
 
     }
@@ -113,9 +115,9 @@ class LogicParserTest {
         val response = logicParser.evaluateExpression(
             """
             {
-                "+": [ {"var": "a"}, {"var": "b"} ]
+                "+": [ {"var": "$ATTRIBUTES.a"}, {"var": "$DIMENSIONS.b"} ]
             }
-        """.trimIndent(), mapOf("a" to "1")
+        """.trimIndent(), listOf(AttributeValue("a", "2")), listOf()
         )
 
         assertEquals(null, response)
@@ -127,9 +129,9 @@ class LogicParserTest {
         val response = logicParser.evaluateExpression(
             """
             {
-                "*": [ {"var": "a"}, {"var": "b"} ]
+                "*": [ {"var": "$ATTRIBUTES.a"}, {"var": "$DIMENSIONS.b"} ]
             }
-        """.trimIndent(), mapOf("a" to "1.03", "b" to "2.03")
+        """.trimIndent(), listOf(AttributeValue("a", "1.03")), listOf(DimensionValue("b", "2.03"))
         )
 
         assertEquals(2.0909, response)
@@ -145,9 +147,9 @@ class LogicParserTest {
         val response = logicParser.evaluateExpression(
             """
             {
-                "custom": [ {"var": "a"}, {"var": "b"} ]
+                "custom": [ {"var": "$ATTRIBUTES.a"}, {"var": "$DIMENSIONS.b"} ]
             }
-        """.trimIndent(), mapOf("a" to "1", "b" to "2")
+        """.trimIndent(), listOf(AttributeValue("a", "2")), listOf(DimensionValue("b", "1"))
         )
 
         assertEquals(3, response)
