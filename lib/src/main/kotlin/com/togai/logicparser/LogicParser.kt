@@ -31,6 +31,8 @@ import io.github.jamsesso.jsonlogic.evaluator.expressions.ReduceExpression
 import io.github.jamsesso.jsonlogic.evaluator.expressions.StrictEqualityExpression
 import io.github.jamsesso.jsonlogic.evaluator.expressions.StrictInequalityExpression
 import io.github.jamsesso.jsonlogic.evaluator.expressions.SubstringExpression
+import java.util.Queue
+import java.util.LinkedList
 
 
 data class ValidationResponse(val status: Boolean, val message: String? = null)
@@ -108,27 +110,31 @@ class LogicParser {
         return jsonLogic.apply(rule, data)
     }
 
-    private fun traverseNode(node: JsonLogicNode, variables: HashSet<String>) {
-        when(node) {
-            is JsonLogicVariable -> {
-                if (node.key !is JsonLogicString) {
-                    throw JsonLogicException("Variable name must be a string")
+    private fun traverseNode(rootNode: JsonLogicNode, variables: HashSet<String>) {
+        val nodes: Queue<JsonLogicNode> = LinkedList()
+        nodes.add(rootNode)
+        while (nodes.isNotEmpty()) {
+            when (val node = nodes.poll()) {
+                is JsonLogicVariable -> {
+                    if (node.key !is JsonLogicString) {
+                        throw JsonLogicException("Variable name must be a string")
+                    }
+                    if (!variables.contains((node.key as JsonLogicString).value)) {
+                        throw JsonLogicException("Unknown variable: ${node.key}")
+                    }
                 }
-                if (!variables.contains((node.key as JsonLogicString).value)) {
-                    throw JsonLogicException("Unknown variable: ${node.key}")
+                is JsonLogicArray -> {
+                    node.forEach {
+                        nodes.add(it)
+                    }
                 }
-            }
-            is JsonLogicArray -> {
-                node.forEach{
-                    traverseNode(it, variables)
-                }
-            }
-            is JsonLogicOperation -> {
-                if (!expressionNames.contains(node.operator)) {
-                    throw JsonLogicException("Unknown operator/operation: ${node.operator}")
-                }
-                node.arguments.forEach{
-                    traverseNode(it, variables)
+                is JsonLogicOperation -> {
+                    if (!expressionNames.contains(node.operator)) {
+                        throw JsonLogicException("Unknown operator/operation: ${node.operator}")
+                    }
+                    node.arguments.forEach {
+                        nodes.add(it)
+                    }
                 }
             }
         }
