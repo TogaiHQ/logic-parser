@@ -87,6 +87,8 @@ class LogicParser {
 
     /**
      * Method to add custom operations
+     * @param name Name of the function
+     * @param function Function to execute
      */
     fun addOperation(name: String, function: (Array<Any>) -> Any) {
         expressionNames.add(name)
@@ -95,6 +97,10 @@ class LogicParser {
 
     /**
      * Method to validate whether the rule is valid or not.
+     * @param rule Rule in json format to validate
+     * @param attributes List of Attribute instance
+     * @param dimensions List of Dimension instance
+     * @return ValidationResponse
      **/
     fun validateExpression(rule: String, attributes: List<Attribute>, dimensions: List<Dimension>): ValidationResponse {
         val variables = HashSet<String>()
@@ -117,6 +123,10 @@ class LogicParser {
 
     /**
      * Method to evaluate the rule using the given data.
+     * @param rule Rule in json format to evaluate
+     * @param attributeValues List of AttributeValue instance
+     * @param dimensionValues List of DimensionValue instance
+     * @return The response of evaluation
      **/
     fun evaluateExpression(
         rule: String,
