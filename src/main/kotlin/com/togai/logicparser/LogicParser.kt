@@ -40,7 +40,7 @@ class LogicParser {
         const val ATTRIBUTES = "attributes"
     }
 
-    private val jsonLogic = JsonLogic()
+    private val customExpressions: HashSet<Pair<String, (Array<Any>) -> Any>> = HashSet()
     private val expressionNames: HashSet<String> = HashSet()
 
     init {
@@ -85,14 +85,22 @@ class LogicParser {
         )
     }
 
+    private fun createJsonLogic(): JsonLogic {
+        val jsonLogic =  JsonLogic()
+        for (expression in customExpressions) {
+            jsonLogic.addOperation(expression.first, expression.second)
+        }
+        return jsonLogic
+    }
+
     /**
      * Method to add custom operations
      * @param name Name of the function
      * @param function Function to execute
      */
     fun addOperation(name: String, function: (Array<Any>) -> Any) {
+        customExpressions.add(Pair(name, function))
         expressionNames.add(name)
-        jsonLogic.addOperation(name, function)
     }
 
     /**
@@ -133,6 +141,7 @@ class LogicParser {
         attributeValues: List<AttributeValue>,
         dimensionValues: List<DimensionValue>
     ): Any? {
+        val jsonLogic = createJsonLogic()
         val data: HashMap<String, HashMap<String, String>> =
             hashMapOf(ATTRIBUTES to hashMapOf(), DIMENSIONS to hashMapOf())
         for (attributeValue in attributeValues) {
