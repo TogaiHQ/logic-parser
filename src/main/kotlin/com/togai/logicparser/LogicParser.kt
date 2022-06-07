@@ -11,26 +11,7 @@ import io.github.jamsesso.jsonlogic.ast.JsonLogicOperation
 import io.github.jamsesso.jsonlogic.ast.JsonLogicParser
 import io.github.jamsesso.jsonlogic.ast.JsonLogicString
 import io.github.jamsesso.jsonlogic.ast.JsonLogicVariable
-import io.github.jamsesso.jsonlogic.evaluator.expressions.AllExpression
-import io.github.jamsesso.jsonlogic.evaluator.expressions.ArrayHasExpression
-import io.github.jamsesso.jsonlogic.evaluator.expressions.ConcatenateExpression
-import io.github.jamsesso.jsonlogic.evaluator.expressions.EqualityExpression
-import io.github.jamsesso.jsonlogic.evaluator.expressions.FilterExpression
-import io.github.jamsesso.jsonlogic.evaluator.expressions.IfExpression
-import io.github.jamsesso.jsonlogic.evaluator.expressions.InExpression
-import io.github.jamsesso.jsonlogic.evaluator.expressions.InequalityExpression
-import io.github.jamsesso.jsonlogic.evaluator.expressions.LogExpression
-import io.github.jamsesso.jsonlogic.evaluator.expressions.LogicExpression
-import io.github.jamsesso.jsonlogic.evaluator.expressions.MapExpression
-import io.github.jamsesso.jsonlogic.evaluator.expressions.MathExpression
-import io.github.jamsesso.jsonlogic.evaluator.expressions.MergeExpression
-import io.github.jamsesso.jsonlogic.evaluator.expressions.MissingExpression
-import io.github.jamsesso.jsonlogic.evaluator.expressions.NotExpression
-import io.github.jamsesso.jsonlogic.evaluator.expressions.NumericComparisonExpression
-import io.github.jamsesso.jsonlogic.evaluator.expressions.ReduceExpression
-import io.github.jamsesso.jsonlogic.evaluator.expressions.StrictEqualityExpression
-import io.github.jamsesso.jsonlogic.evaluator.expressions.StrictInequalityExpression
-import io.github.jamsesso.jsonlogic.evaluator.expressions.SubstringExpression
+import io.github.jamsesso.jsonlogic.evaluator.JsonLogicExpression
 import java.util.Queue
 import java.util.LinkedList
 
@@ -40,58 +21,8 @@ class LogicParser {
         const val ATTRIBUTES = "attributes"
     }
 
-    private val customExpressions: HashSet<Pair<String, (Array<Any>) -> Any>> = HashSet()
-    private val expressionNames: HashSet<String> = HashSet()
-
-    init {
-        // TODO: Create a PR in json logic repo to expose all supported operations
-        expressionNames.addAll(
-            hashSetOf(
-                MathExpression.ADD.key(),
-                MathExpression.SUBTRACT.key(),
-                MathExpression.MULTIPLY.key(),
-                MathExpression.DIVIDE.key(),
-                MathExpression.MODULO.key(),
-                MathExpression.MIN.key(),
-                MathExpression.MAX.key(),
-                NumericComparisonExpression.GT.key(),
-                NumericComparisonExpression.GTE.key(),
-                NumericComparisonExpression.LT.key(),
-                NumericComparisonExpression.LTE.key(),
-                IfExpression.IF.key(),
-                IfExpression.TERNARY.key(),
-                EqualityExpression.INSTANCE.key(),
-                InequalityExpression.INSTANCE.key(),
-                StrictEqualityExpression.INSTANCE.key(),
-                StrictInequalityExpression.INSTANCE.key(),
-                NotExpression.SINGLE.key(),
-                NotExpression.DOUBLE.key(),
-                LogicExpression.AND.key(),
-                LogicExpression.OR.key(),
-                LogExpression.STDOUT.key(),
-                MapExpression.INSTANCE.key(),
-                FilterExpression.INSTANCE.key(),
-                ReduceExpression.INSTANCE.key(),
-                AllExpression.INSTANCE.key(),
-                ArrayHasExpression.SOME.key(),
-                ArrayHasExpression.NONE.key(),
-                MergeExpression.INSTANCE.key(),
-                InExpression.INSTANCE.key(),
-                ConcatenateExpression.INSTANCE.key(),
-                SubstringExpression.INSTANCE.key(),
-                MissingExpression.ALL.key(),
-                MissingExpression.SOME.key()
-            )
-        )
-    }
-
-    private fun createJsonLogic(): JsonLogic {
-        val jsonLogic =  JsonLogic()
-        for (expression in customExpressions) {
-            jsonLogic.addOperation(expression.first, expression.second)
-        }
-        return jsonLogic
-    }
+    private val jsonLogic =  JsonLogic().addCache(LRUCache())
+    private val expressionNames = jsonLogic.expressions.map(JsonLogicExpression::key).toMutableSet()
 
     /**
      * Method to add custom operations
@@ -99,7 +30,7 @@ class LogicParser {
      * @param function Function to execute
      */
     fun addOperation(name: String, function: (Array<Any>) -> Any) {
-        customExpressions.add(Pair(name, function))
+        jsonLogic.addOperation(name, function)
         expressionNames.add(name)
     }
 
@@ -141,7 +72,6 @@ class LogicParser {
         attributeValues: List<AttributeValue>,
         dimensionValues: List<DimensionValue>
     ): Any? {
-        val jsonLogic = createJsonLogic()
         val data: HashMap<String, HashMap<String, String>> =
             hashMapOf(ATTRIBUTES to hashMapOf(), DIMENSIONS to hashMapOf())
         for (attributeValue in attributeValues) {
@@ -151,6 +81,14 @@ class LogicParser {
             data[DIMENSIONS]!![dimensionValue.name] = dimensionValue.value
         }
         return jsonLogic.apply(rule, data)
+    }
+
+    fun truthy(
+        rule: String,
+        attributeValues: List<AttributeValue>,
+        dimensionValues: List<DimensionValue>
+    ): Boolean {
+        return JsonLogic.truthy(evaluateExpression(rule, attributeValues, dimensionValues))
     }
 
     private fun traverseNode(rootNode: JsonLogicNode, variables: HashSet<String>) {

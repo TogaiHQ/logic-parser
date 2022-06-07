@@ -7,151 +7,163 @@ import com.togai.logicparser.LogicParser.Companion.ATTRIBUTES
 import com.togai.logicparser.LogicParser.Companion.DIMENSIONS
 import io.github.jamsesso.jsonlogic.evaluator.JsonLogicEvaluationException
 import java.lang.Integer.parseInt
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
 
 class LogicParserTest {
 
-    @Test
-    fun `validate rule with no variables- success`() {
-        val logicParser = LogicParser()
-        val response = logicParser.validateExpression(
-            """
+    @Nested
+    @DisplayName("Expression validation tests")
+    inner class Validate {
+        @Test
+        fun `validate rule with no variables- success`() {
+            val logicParser = LogicParser()
+            val response = logicParser.validateExpression(
+                """
             {
                 "+": [ 1, 2 ]
             }
         """.trimIndent(), listOf(), listOf()
-        )
+            )
 
-        assertEquals(true, response.status)
-    }
+            assertEquals(true, response.status)
+        }
 
-    @Test
-    fun `validate rule with variables - success`() {
-        val logicParser = LogicParser()
-        val response = logicParser.validateExpression(
-            """
+        @Test
+        fun `validate rule with variables - success`() {
+            val logicParser = LogicParser()
+            val response = logicParser.validateExpression(
+                """
             {
                 "+": [ {"var": "$ATTRIBUTES.a"}, {"var": "$DIMENSIONS.b"} ]
             }
         """.trimIndent(), listOf(Attribute("a"), Attribute("c")), listOf(Dimension("b"))
-        )
+            )
 
-        assertEquals(true, response.status)
-    }
+            assertEquals(true, response.status)
+        }
 
-    @Test
-    fun `validate rule with unknown variables - failure`() {
-        val logicParser = LogicParser()
-        val response = logicParser.validateExpression(
-            """
+        @Test
+        fun `validate rule with unknown variables - failure`() {
+            val logicParser = LogicParser()
+            val response = logicParser.validateExpression(
+                """
             {
                 "+": [  {"var": "$ATTRIBUTES.a"}, {"var": "$DIMENSIONS.b"} ]
             }
         """.trimIndent(), listOf(Attribute("a")), listOf()
-        )
+            )
 
-        assertEquals(false, response.status)
-    }
+            assertEquals(false, response.status)
+        }
 
-    @Test
-    fun `validate rule with unknown operators - failure`() {
-        val logicParser = LogicParser()
-        val response = logicParser.validateExpression(
-            """
+        @Test
+        fun `validate rule with unknown operators - failure`() {
+            val logicParser = LogicParser()
+            val response = logicParser.validateExpression(
+                """
             {
                 "xor": [  {"var": "$ATTRIBUTES.a"}, {"var": "$DIMENSIONS.b"} ]
             }
         """.trimIndent(), listOf(Attribute("a")), listOf(Dimension("b"))
-        )
+            )
 
-        assertEquals(false, response.status)
-    }
+            assertEquals(false, response.status)
+        }
 
-    @Test
-    fun `validate rule with custom operation - success`() {
-        val logicParser = LogicParser()
-        logicParser.addOperation("custom") { args -> { args[0] as Int + args[1] as Int } }
-        val response = logicParser.validateExpression(
-            """
+        @Test
+        fun `validate rule with custom operation - success`() {
+            val logicParser = LogicParser()
+            logicParser.addOperation("custom") { args -> { args[0] as Int + args[1] as Int } }
+            val response = logicParser.validateExpression(
+                """
             {
                 "custom": [  {"var": "$ATTRIBUTES.a"}, {"var": "$DIMENSIONS.b"} ]
             }
             """.trimIndent(), listOf(Attribute("a")), listOf(Dimension("b"))
-        )
-        assertEquals(true, response.status)
+            )
+            assertEquals(true, response.status)
+        }
     }
 
-    @Test
-    fun `evaluate rule with variables - success`() {
-        val logicParser = LogicParser()
-        val response = logicParser.evaluateExpression(
-            """
+    @Nested
+    @DisplayName("Expression evaluation tests")
+    inner class Evaluate {
+        @Test
+        fun `evaluate rule with variables - success`() {
+            val logicParser = LogicParser()
+            val response = logicParser.evaluateExpression(
+                """
             {
                 "+": [ {"var": "$ATTRIBUTES.a"}, {"var": "$DIMENSIONS.b"} ]
             }
         """.trimIndent(), listOf(AttributeValue("a", "2")), listOf(DimensionValue("b", "1"))
-        )
+            )
 
-        assertEquals(3.0, response)
-    }
+            assertEquals(3.0, response)
+        }
 
-    @Test(expected = JsonLogicEvaluationException::class)
-    fun `evaluate rule with unknown operator - failure`() {
-        val logicParser = LogicParser()
-        logicParser.evaluateExpression(
-            """
+        @Test
+        fun `evaluate rule with unknown operator - failure`() {
+            val logicParser = LogicParser()
+            assertThrows(JsonLogicEvaluationException::class.java) {
+                logicParser.evaluateExpression(
+                    """
             {
                 "^": [ {"var": "$ATTRIBUTES.a"}, {"var": "$DIMENSIONS.b"} ]
             }
         """.trimIndent(), listOf(AttributeValue("a", "2")), listOf(DimensionValue("b", "1"))
-        )
+                )
+            }
+        }
 
-    }
-
-    @Test
-    fun `evaluate rule with unknown variables - failure`() {
-        val logicParser = LogicParser()
-        val response = logicParser.evaluateExpression(
-            """
+        @Test
+        fun `evaluate rule with unknown variables - failure`() {
+            val logicParser = LogicParser()
+            val response = logicParser.evaluateExpression(
+                """
             {
                 "+": [ {"var": "$ATTRIBUTES.a"}, {"var": "$DIMENSIONS.b"} ]
             }
         """.trimIndent(), listOf(AttributeValue("a", "2")), listOf()
-        )
+            )
 
-        assertEquals(null, response)
-    }
+            assertEquals(null, response)
+        }
 
-    @Test
-    fun `evaluate rule with decimals - failure`() {
-        val logicParser = LogicParser()
-        val response = logicParser.evaluateExpression(
-            """
+        @Test
+        fun `evaluate rule with decimals - failure`() {
+            val logicParser = LogicParser()
+            val response = logicParser.evaluateExpression(
+                """
             {
                 "*": [ {"var": "$ATTRIBUTES.a"}, {"var": "$DIMENSIONS.b"} ]
             }
         """.trimIndent(), listOf(AttributeValue("a", "1.03")), listOf(DimensionValue("b", "2.03"))
-        )
+            )
 
-        assertEquals(2.0909, response)
-    }
-
-    @Test
-    fun `evaluate rule with custom operation - success`() {
-        val logicParser = LogicParser()
-        val func = fun(args: Array<Any>): Any {
-            return parseInt(args[0].toString()) + parseInt(args[1].toString())
+            assertEquals(2.0909, response)
         }
-        logicParser.addOperation("custom", func)
-        val response = logicParser.evaluateExpression(
-            """
+
+        @Test
+        fun `evaluate rule with custom operation - success`() {
+            val logicParser = LogicParser()
+            val func = fun(args: Array<Any>): Any {
+                return parseInt(args[0].toString()) + parseInt(args[1].toString())
+            }
+            logicParser.addOperation("custom", func)
+            val response = logicParser.evaluateExpression(
+                """
             {
                 "custom": [ {"var": "$ATTRIBUTES.a"}, {"var": "$DIMENSIONS.b"} ]
             }
         """.trimIndent(), listOf(AttributeValue("a", "2")), listOf(DimensionValue("b", "1"))
-        )
+            )
 
-        assertEquals(3, response)
+            assertEquals(3, response)
+        }
     }
 }
