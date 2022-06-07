@@ -17,7 +17,14 @@ plugins {
 repositories {
     // Use Maven Central for resolving dependencies.
     mavenCentral()
+    maven { url 'https://jitpack.io'}
 }
+
+test {
+    useJUnitPlatform()
+}
+
+sourceCompatibility = 11
 
 dependencies {
     // Align versions of all Kotlin components
@@ -27,16 +34,14 @@ dependencies {
     implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
 
     // Json logic library
-    implementation 'io.github.jamsesso:json-logic-java:1.0.7'
+    implementation 'com.github.TogaiHQ:json-logic-java:1.0.8-SNAPSHOT'
 
     // This dependency is used internally, and not exposed to consumers on their own compile classpath.
     implementation 'com.google.guava:guava:31.1-jre'
 
-    // Use the Kotlin test library.
-    testImplementation 'org.jetbrains.kotlin:kotlin-test'
-
-    // Use the Kotlin JUnit integration.
-    testImplementation 'org.jetbrains.kotlin:kotlin-test-junit'
+    // JUnit
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.2")
 
     // This dependency is exported to consumers, that is to say found on their compile classpath.
     api 'org.apache.commons:commons-math3:3.6.1'
