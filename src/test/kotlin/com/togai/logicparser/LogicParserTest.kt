@@ -7,6 +7,7 @@ import com.togai.logicparser.LogicParser.Companion.ATTRIBUTES
 import com.togai.logicparser.LogicParser.Companion.DIMENSIONS
 import io.github.jamsesso.jsonlogic.evaluator.JsonLogicEvaluationException
 import java.lang.Integer.parseInt
+import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.DisplayName
@@ -103,7 +104,7 @@ class LogicParserTest {
         """.trimIndent(), listOf(AttributeValue("a", "2")), listOf(DimensionValue("b", "1"))
             )
 
-            assertEquals(3.0, response)
+            assertEquals(BigDecimal("3"), response)
         }
 
         @Test
@@ -145,7 +146,7 @@ class LogicParserTest {
         """.trimIndent(), listOf(AttributeValue("a", "1.03")), listOf(DimensionValue("b", "2.03"))
             )
 
-            assertEquals(2.0909, response)
+            assertEquals(BigDecimal("2.0909"), response)
         }
 
         @Test
