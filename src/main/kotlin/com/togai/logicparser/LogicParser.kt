@@ -100,8 +100,9 @@ class LogicParser {
                     if (node.key !is JsonLogicString) {
                         throw JsonLogicException("Variable name must be a string")
                     }
-                    if (!variables.contains((node.key as JsonLogicString).value)) {
-                        throw JsonLogicException("Unknown variable: ${node.key}")
+                    val variableName = (node.key as JsonLogicString).value
+                    if (!variables.contains(variableName)) {
+                        throw JsonLogicException("Unknown variable: $variableName")
                     }
                 }
                 is JsonLogicArray -> {
