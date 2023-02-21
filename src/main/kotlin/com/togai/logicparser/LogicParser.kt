@@ -38,15 +38,15 @@ class LogicParser {
     /**
      * Method to validate whether the rule is valid or not.
      * @param rule Rule in json format to validate
-     * @param attributes List of Attribute instance
-     * @param dimensions List of Dimension instance
-     * @param dependencies List of Dependencies instance
+     * @param attributes List of Variable instance
+     * @param dimensions List of Variable instance
+     * @param dependencies List of Variable instance
      * @return ValidationResponse
      **/
     fun validateExpression(
         rule: String,
-        attributes: List<Attribute>,
-        dimensions: List<Dimension>,
+        attributes: List<Variable>,
+        dimensions: List<Variable>,
         dependencies: List<Variable>? = null
     ): ValidationResponse {
         val variables = HashSet<String>()
@@ -83,16 +83,16 @@ class LogicParser {
     /**
      * Method to evaluate the rule using the given data.
      * @param rule Rule in json format to evaluate
-     * @param attributeValues List of AttributeValue instance
-     * @param dimensionValues List of DimensionValue instance
-     * @param dependencyValues List of DependencyValue instance
+     * @param attributeValues List of Value instance
+     * @param dimensionValues List of Value instance
+     * @param dependencyValues List of Value instance
      * @return The response of evaluation
      **/
     @OptIn(ExperimentalStdlibApi::class)
     fun evaluateExpression(
         rule: String,
-        attributeValues: List<AttributeValue>,
-        dimensionValues: List<DimensionValue>,
+        attributeValues: List<Value>,
+        dimensionValues: List<Value>,
         dependencyValues: List<Value>? = null,
     ): Any? {
         val data: Map<String, Map<String, String>> = buildMap {
@@ -110,8 +110,8 @@ class LogicParser {
 
     fun truthy(
         rule: String,
-        attributeValues: List<AttributeValue>,
-        dimensionValues: List<DimensionValue>
+        attributeValues: List<Value>,
+        dimensionValues: List<Value>
     ): Boolean {
         return JsonLogic.truthy(evaluateExpression(rule, attributeValues, dimensionValues))
     }

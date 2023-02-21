@@ -15,7 +15,7 @@ data class Attribute(override val name: String, val unit: String? = null): Varia
 /**
  * Dimension used to validate rule
  */
-data class Dimension(override val name: String ): Variable(name)
+typealias Dimension = Variable
 
 open class Value(override val name: String, open val value: String): Variable(name)
 
@@ -28,4 +28,4 @@ data class AttributeValue(override val name: String, override val value: String,
 /**
  * Dimension along with value for evaluating rule
  */
-data class DimensionValue(override val name: String, override val value: String): Value(name, value)
+typealias DimensionValue = Value
