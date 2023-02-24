@@ -19,6 +19,7 @@ class LogicParser {
     companion object {
         const val DIMENSIONS = "dimensions"
         const val ATTRIBUTES = "attributes"
+        const val DEPENDENCIES = "dependencies"
     }
 
     private val jsonLogic =  JsonLogic().addCache(LRUCache())
@@ -37,11 +38,17 @@ class LogicParser {
     /**
      * Method to validate whether the rule is valid or not.
      * @param rule Rule in json format to validate
-     * @param attributes List of Attribute instance
-     * @param dimensions List of Dimension instance
+     * @param attributes List of Variable instance
+     * @param dimensions List of Variable instance
+     * @param dependencies List of Variable instance
      * @return ValidationResponse
      **/
-    fun validateExpression(rule: String, attributes: List<Attribute>, dimensions: List<Dimension>): ValidationResponse {
+    fun validateExpression(
+        rule: String,
+        attributes: List<Variable>,
+        dimensions: List<Variable>,
+        dependencies: List<Variable>? = null
+    ): ValidationResponse {
         val variables = HashSet<String>()
 
         attributes.forEach {
@@ -50,7 +57,20 @@ class LogicParser {
         dimensions.forEach {
             variables.add("$DIMENSIONS.${it.name}")
         }
+        dependencies?.forEach {
+            variables.add("$DEPENDENCIES.${it.name}")
+        }
 
+        return validateExpression(rule, variables)
+    }
+
+    /**
+     * Method to validate whether the rule given set of params.
+     * @param rule Rule in json format to validate
+     * @param variables List of Strings
+     * @return ValidationResponse
+     **/
+    private fun validateExpression(rule: String, variables: Set<String>): ValidationResponse {
         try {
             val node = JsonLogicParser.parse(rule)
             traverseNode(node, variables)
@@ -63,35 +83,40 @@ class LogicParser {
     /**
      * Method to evaluate the rule using the given data.
      * @param rule Rule in json format to evaluate
-     * @param attributeValues List of AttributeValue instance
-     * @param dimensionValues List of DimensionValue instance
+     * @param attributeValues List of Value instance
+     * @param dimensionValues List of Value instance
+     * @param dependencyValues List of Value instance
      * @return The response of evaluation
      **/
+    @OptIn(ExperimentalStdlibApi::class)
     fun evaluateExpression(
         rule: String,
-        attributeValues: List<AttributeValue>,
-        dimensionValues: List<DimensionValue>
+        attributeValues: List<Value>,
+        dimensionValues: List<Value>,
+        dependencyValues: List<Value>? = null,
     ): Any? {
-        val data: HashMap<String, HashMap<String, String>> =
-            hashMapOf(ATTRIBUTES to hashMapOf(), DIMENSIONS to hashMapOf())
-        for (attributeValue in attributeValues) {
-            data[ATTRIBUTES]!![attributeValue.name] = attributeValue.value
-        }
-        for (dimensionValue in dimensionValues) {
-            data[DIMENSIONS]!![dimensionValue.name] = dimensionValue.value
+        val data: Map<String, Map<String, String>> = buildMap {
+            put(ATTRIBUTES, attributeValues.associate { it.name to it.value })
+            put(DIMENSIONS, dimensionValues.associate { it.name to it.value })
+            put(DEPENDENCIES, dependencyValues?.associate { it.name to it.value } ?: emptyMap())
         }
         return jsonLogic.apply(rule, data)
     }
 
+    fun evaluateExpression(
+        rule: String,
+        data: Map<String, Value>
+    ): Any? = jsonLogic.apply(rule, data)
+
     fun truthy(
         rule: String,
-        attributeValues: List<AttributeValue>,
-        dimensionValues: List<DimensionValue>
+        attributeValues: List<Value>,
+        dimensionValues: List<Value>
     ): Boolean {
         return JsonLogic.truthy(evaluateExpression(rule, attributeValues, dimensionValues))
     }
 
-    private fun traverseNode(rootNode: JsonLogicNode, variables: HashSet<String>) {
+    private fun traverseNode(rootNode: JsonLogicNode, variables: Set<String>) {
         val nodes: Queue<JsonLogicNode> = LinkedList()
         nodes.add(rootNode)
         while (nodes.isNotEmpty()) {

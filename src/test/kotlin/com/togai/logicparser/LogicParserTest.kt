@@ -4,6 +4,7 @@
 package com.togai.logicparser
 
 import com.togai.logicparser.LogicParser.Companion.ATTRIBUTES
+import com.togai.logicparser.LogicParser.Companion.DEPENDENCIES
 import com.togai.logicparser.LogicParser.Companion.DIMENSIONS
 import io.github.jamsesso.jsonlogic.evaluator.JsonLogicEvaluationException
 import java.lang.Integer.parseInt
@@ -39,9 +40,12 @@ class LogicParserTest {
             val response = logicParser.validateExpression(
                 """
             {
-                "+": [ {"var": "$ATTRIBUTES.a"}, {"var": "$DIMENSIONS.b"} ]
+                "+": [ {"var": "$ATTRIBUTES.a"}, {"+": [{"var": "$DIMENSIONS.b"}, {"var": "$DEPENDENCIES.c"}]} ]
             }
-        """.trimIndent(), listOf(Attribute("a"), Attribute("c")), listOf(Dimension("b"))
+        """.trimIndent(),
+                listOf(Attribute("a"), Attribute("d")),
+                listOf(Dimension("b")),
+                listOf(Variable("c"))
             )
 
             assertEquals(true, response.status)
@@ -99,12 +103,13 @@ class LogicParserTest {
             val response = logicParser.evaluateExpression(
                 """
             {
-                "+": [ {"var": "$ATTRIBUTES.a"}, {"var": "$DIMENSIONS.b"} ]
+                "+": [ {"var": "$ATTRIBUTES.a"}, {"+": [{"var": "$DIMENSIONS.b"}, {"var": "$DEPENDENCIES.c"}]} ]
             }
-        """.trimIndent(), listOf(AttributeValue("a", "2")), listOf(DimensionValue("b", "1"))
+        """.trimIndent(), listOf(AttributeValue("a", "2")), listOf(DimensionValue("b", "1")),
+                listOf(Value("c", "5"))
             )
 
-            assertEquals(BigDecimal("3"), response)
+            assertEquals(BigDecimal("8"), response)
         }
 
         @Test
