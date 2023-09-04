@@ -109,7 +109,7 @@ class LogicParser {
     ): Any? = jsonLogic.apply(rule, data)
 
 
-    fun evaluateExpression(
+    fun evaluateExpressionWithMapData(
         rule: String,
         data: Map<String, String>
     ): Any? = jsonLogic.apply(rule, data)
