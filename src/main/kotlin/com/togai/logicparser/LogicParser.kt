@@ -108,6 +108,12 @@ class LogicParser {
         data: Map<String, Value>
     ): Any? = jsonLogic.apply(rule, data)
 
+
+    fun evaluateExpression(
+        rule: String,
+        data: Map<String, String>
+    ): Any? = jsonLogic.apply(rule, data)
+
     fun truthy(
         rule: String,
         attributeValues: List<Value>,
