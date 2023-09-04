@@ -171,5 +171,25 @@ class LogicParserTest {
 
             assertEquals(3, response)
         }
+        @Test
+        fun `evaluate rule with simple map - success`() {
+            val logicParser = LogicParser()
+            val response = logicParser.evaluateExpressionWithMapData(
+                """
+            {
+                "*": [ {"var": "a"}, 2 ]
+            }
+        """.trimIndent(), mapOf("a" to "4")
+            )
+
+            assertEquals(BigDecimal("8"), response)
+        }
+
+        @Test
+        fun `evaluate rule with only number as rule - success`() {
+          val logicParser = LogicParser()
+          val response = logicParser.evaluateExpressionWithMapData("2", mapOf())
+          assertEquals(BigDecimal("2"), response)
+        }
     }
 }
