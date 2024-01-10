@@ -22,7 +22,6 @@ class LogicParser {
         const val DEPENDENCIES = "dependencies"
         const val USAGE = "usage"
         const val REVENUE = "revenue"
-        const val USAGE_TAG = "usage_tag"
         const val REVENUE_TAG = "revenue_tag"
     }
 
