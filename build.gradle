@@ -45,6 +45,8 @@ dependencies {
     // This dependency is used internally, and not exposed to consumers on their own compile classpath.
     implementation 'com.google.guava:guava:31.1-jre'
 
+    implementation 'io.jitpack:gradle-simple:2.0'
+
     // JUnit
     testImplementation('org.junit.jupiter:junit-jupiter-api:5.9.0')
     testRuntimeOnly('org.junit.jupiter:junit-jupiter-engine:5.9.0')
