@@ -70,8 +70,8 @@ class LogicParser {
 
     fun validateExpression(
         rule: String,
-        billableIds: List<String>,
-        tags: List<String>,
+        billableIds: Set<String>,
+        tags: Set<String>,
     ): ValidationResponse {
         val variables = HashSet<String>()
 
