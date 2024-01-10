@@ -16,8 +16,14 @@ plugins {
 
 repositories {
     // Use Maven Central for resolving dependencies.
+    mavenLocal()
     mavenCentral()
     maven { url 'https://jitpack.io'}
+}
+
+wrapper {
+    gradleVersion = "8.5"
+    distributionUrl = "https://services.gradle.org/distributions/gradle-$gradleVersion-all.zip"
 }
 
 test {
