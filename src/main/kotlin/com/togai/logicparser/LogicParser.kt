@@ -74,7 +74,6 @@ class LogicParser {
         tags: Set<String>,
     ): ValidationResponse {
         val variables = HashSet<String>()
-
         billableIds.forEach {
             variables.add("$USAGE.$it")
             variables.add("$REVENUE.$it")
