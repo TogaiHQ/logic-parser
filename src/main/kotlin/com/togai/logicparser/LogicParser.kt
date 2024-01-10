@@ -20,6 +20,10 @@ class LogicParser {
         const val DIMENSIONS = "dimensions"
         const val ATTRIBUTES = "attributes"
         const val DEPENDENCIES = "dependencies"
+        const val USAGE = "usage"
+        const val REVENUE = "revenue"
+        const val USAGE_TAG = "usage"
+        const val REVENUE_TAG = "revenue"
     }
 
     private val jsonLogic =  JsonLogic().addCache(LRUCache())
@@ -59,6 +63,30 @@ class LogicParser {
         }
         dependencies?.forEach {
             variables.add("$DEPENDENCIES.${it.name}")
+        }
+
+        return validateExpression(rule, variables)
+    }
+
+    fun validateExpression(
+        rule: String,
+        billableNames: Set<String>,
+        billableIds: Set<String>,
+        tags: Set<String>,
+    ): ValidationResponse {
+        val variables = HashSet<String>()
+
+        billableNames.forEach {
+            variables.add("$USAGE.$it")
+            variables.add("$REVENUE.$it")
+        }
+        billableIds.forEach {
+            variables.add("$USAGE.$it")
+            variables.add("$REVENUE.$it")
+        }
+        tags.forEach {
+            variables.add("$USAGE_TAG.$it")
+            variables.add("$REVENUE_TAG.$it")
         }
 
         return validateExpression(rule, variables)
