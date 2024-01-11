@@ -20,18 +20,31 @@ repositories {
     maven { url 'https://jitpack.io'}
 }
 
+wrapper {
+    gradleVersion = "8.5"
+    distributionUrl = "https://services.gradle.org/distributions/gradle-$gradleVersion-all.zip"
+}
+
 test {
     useJUnitPlatform()
 }
 
 sourceCompatibility = 17
 
+compileKotlin {
+    kotlinOptions.jvmTarget = "17"
+}
+
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "17"
+}
+
 dependencies {
     // Align versions of all Kotlin components
     implementation platform('org.jetbrains.kotlin:kotlin-bom')
 
     // Use the Kotlin JDK 8 standard library.
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.10'
 
     // Json logic library
     api 'com.github.TogaiHQ:json-logic-java:1.0.10'
@@ -40,8 +53,8 @@ dependencies {
     implementation 'com.google.guava:guava:31.1-jre'
 
     // JUnit
-    testImplementation('org.junit.jupiter:junit-jupiter-api:5.9.0')
-    testRuntimeOnly('org.junit.jupiter:junit-jupiter-engine:5.9.0')
+    testImplementation('org.junit.jupiter:junit-jupiter-api:5.9.2')
+    testRuntimeOnly('org.junit.jupiter:junit-jupiter-engine:5.9.2')
 
     // This dependency is exported to consumers, that is to say found on their compile classpath.
     api 'org.apache.commons:commons-math3:3.6.1'
