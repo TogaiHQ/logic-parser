@@ -77,10 +77,7 @@ class LogicParser {
             variables.add("$USAGE.$it")
             variables.add("$REVENUE.$it")
         }
-        tags.forEach {
-            variables.add("$USAGE_TAG.$it")
-            variables.add("$REVENUE_TAG.$it")
-        }
+        tags.forEach { variables.add("$REVENUE_TAG.$it") }
 
         return validateExpression(rule, variables)
     }
