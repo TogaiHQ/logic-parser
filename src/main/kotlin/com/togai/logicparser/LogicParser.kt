@@ -121,6 +121,21 @@ class LogicParser {
         return jsonLogic.apply(rule, data)
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
+    fun evaluateExpression(
+        rule: String,
+        billableIdUsages: Set<Value>,
+        billableIdRevenues: Set<Value>,
+        tagRevenues: Set<Value>,
+    ): Any? {
+        val data: Map<String, Map<String, String>> = buildMap {
+            put(USAGE, billableIdUsages.associate { it.name to it.value })
+            put(REVENUE, billableIdRevenues.associate { it.name to it.value })
+            put(REVENUE_TAG, tagRevenues.associate { it.name to it.value })
+        }
+        return jsonLogic.apply(rule, data)
+    }
+
     fun evaluateExpression(
         rule: String,
         data: Map<String, Value>
