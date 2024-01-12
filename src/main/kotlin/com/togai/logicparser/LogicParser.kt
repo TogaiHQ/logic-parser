@@ -22,7 +22,6 @@ class LogicParser {
         const val DEPENDENCIES = "dependencies"
         const val USAGE = "usage"
         const val REVENUE = "revenue"
-        const val REVENUE_TAG = "revenue_tag"
     }
 
     private val jsonLogic =  JsonLogic().addCache(LRUCache())
@@ -69,15 +68,12 @@ class LogicParser {
 
     fun validateExpression(
         rule: String,
-        billableIds: Set<String>,
-        tags: Set<String>,
+        usageIds: Set<String>,
+        revenueIds: Set<String>,
     ): ValidationResponse {
         val variables = HashSet<String>()
-        billableIds.forEach {
-            variables.add("$USAGE.$it")
-            variables.add("$REVENUE.$it")
-        }
-        tags.forEach { variables.add("$REVENUE_TAG.$it") }
+        usageIds.forEach { variables.add("$USAGE.$it") }
+        revenueIds.forEach { variables.add("$REVENUE.$it") }
 
         return validateExpression(rule, variables)
     }
@@ -124,14 +120,12 @@ class LogicParser {
     @OptIn(ExperimentalStdlibApi::class)
     fun evaluateExpression(
         rule: String,
-        billableIdUsages: Set<Value>,
-        billableIdRevenues: Set<Value>,
-        tagRevenues: Set<Value>,
+        usageValues: Set<Value>,
+        revenueValues: Set<Value>,
     ): Any? {
         val data: Map<String, Map<String, String>> = buildMap {
-            put(USAGE, billableIdUsages.associate { it.name to it.value })
-            put(REVENUE, billableIdRevenues.associate { it.name to it.value })
-            put(REVENUE_TAG, tagRevenues.associate { it.name to it.value })
+            put(USAGE, usageValues.associate { it.name to it.value })
+            put(REVENUE, revenueValues.associate { it.name to it.value })
         }
         return jsonLogic.apply(rule, data)
     }
