@@ -66,7 +66,7 @@ class LogicParser {
         return validateExpression(rule, variables)
     }
 
-    fun validateExpression(
+    fun validatePricingRuleExpression(
         rule: String,
         usageIds: Set<String>,
         revenueIds: Set<String>,
@@ -118,7 +118,7 @@ class LogicParser {
     }
 
     @OptIn(ExperimentalStdlibApi::class)
-    fun evaluateExpression(
+    fun evaluatePricingRuleExpression(
         rule: String,
         usageValues: Set<Value>,
         revenueValues: Set<Value>,
